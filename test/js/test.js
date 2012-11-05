@@ -2,7 +2,7 @@ var cache = new Cache();
 test("Stored object doesn't expire", function()
 {
     var object = new Object();
-    cache.add(object, "foo", 1);
+    cache.add('foo', object, 1);
     equal(cache.get('foo'), object, "Object didn't expire");
     cache.clear();
 });
@@ -10,7 +10,7 @@ test("Stored object doesn't expire", function()
 test("Can store string", function()
 {
     var string = "foo bar";
-    cache.add(string, 'string', 0);
+    cache.add('string', string, 0);
     equal(cache.get('string'), string, "String in cache");
     cache.clear();
 });
@@ -18,7 +18,7 @@ test("Can store string", function()
 test("Can store int", function()
 {
     var integer = 1;
-    cache.add(integer, 'integer', 0);
+    cache.add('integer', integer, 0);
     equal(cache.get('integer'), integer, "Integer in cache");
     cache.clear();
 });
@@ -26,7 +26,7 @@ test("Can store int", function()
 test("Can store array", function()
 {
     var array = [];
-    cache.add(array, 'array', 0);
+    cache.add('array', array, 0);
     equal(cache.get('array'), array, "Array in cache");
     cache.clear();
 });
@@ -34,15 +34,15 @@ test("Can store array", function()
 test("Object expires", function()
 {
     var object = new Object();
-    cache.add(object, 'object', -1);
-    equal(cache.get('object'), null, "Object has expired");
+    cache.add('object', object, -1);
+    strictEqual(cache.get('object'), undefined, "Object has expired");
     cache.clear();
 });
 
 test("Object with future date doesn't expire", function()
 {
     var object = new Object();
-    cache.add(object, 'object', new Date().getTime()+3600);
+    cache.add('object', object, new Date().getTime()+3600);
     equal(cache.get('object'), object, "Object is there");
     cache.clear();
 });
@@ -51,10 +51,10 @@ test("Cache can be cleared", function()
 {
     var foo = 1;
     var bar = 2;
-    cache.add(foo, 'foo', 0).add(bar, 'bar', 0);
+    cache.add('foo', foo, 0).add('bar', bar, 0);
     cache.clear();
-    equal(cache.get('foo'), null, "Foo object is removed");
-    equal(cache.get('bar'), null, "Bar object is removed");
+    strictEqual(cache.get('foo'), undefined, "Foo object is removed");
+    strictEqual(cache.get('bar'), undefined, "Bar object is removed");
 });
 
 test("Has JSON", function()
@@ -76,3 +76,43 @@ if (cache.hasLocalStorage())
         equal(localStorage.getItem('altfourjs'), JSON.stringify(cache.storage), "Cache stored in local storage");
     });
 }
+
+// Assigns value from callback if miss
+test("Item stored from callback on miss", function()
+{
+    var name = "John Doe";
+    var key = "name";
+    cache.clear();
+    strictEqual(cache.get(key), undefined, "Cache doesn't contain key '" + key + "' when cleared");
+    equal(cache.get(key, function(key, cache)
+    {
+        return name;
+    }), name, "Cache contains object with key '" + key + "' after callback")
+});
+
+// No value retrieved if callback doesn't return value
+test("Item not stored when callback function returns void on miss", function()
+{
+    var key = "name";
+    cache.clear();
+    strictEqual(cache.get(key), undefined, "Cache doesn't contain key '" + key + "' when cleared");
+    strictEqual(cache.get(key, function() {}), undefined, "Cache doesn't contain object with key '" + key + "' after callback")
+});
+
+// Value set asynchronously by callback function
+asyncTest("Value set asynchronously by callback", 2, function()
+{
+    var key = "name";
+    var value = "John Doe";
+    cache.clear();
+    strictEqual(cache.get(key), undefined, "Cache doesn't contain key '" + key + "' when cleared");
+    cache.get(key, function(key, cache)
+    {
+        setTimeout(function()
+        {
+            cache.add(key, value, 0);
+            equal(cache.get(key), value, "Key '" + key + "' has value '" + value + "'");
+            start();
+        }, 1E1);
+    });
+});

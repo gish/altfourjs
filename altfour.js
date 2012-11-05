@@ -19,7 +19,7 @@
         /**
          * Adds item with key and expiry time
          */
-        add : function(item, key, expiry)
+        add : function(key, item, expiry)
         {
             if (expiry)
             {
@@ -39,7 +39,7 @@
         /**
          * Retrieves an object
          */
-        get : function(key)
+        get : function(key, callback)
         {
             var item;
             var now;
@@ -54,7 +54,7 @@
                     return item.item;
                 }
                 // Remove the item
-                else if(item.expiry && item.expiry < now)
+                else if (item.expiry && item.expiry < now)
                 {
                     this.storage[key] = null;
                     
@@ -62,9 +62,23 @@
                     this.saveToLocalStorage();
                 }
             }
+            // If not found, but callback defined, the value will be retrieved
+            else if (callback)
+            {
+                var value;
+                value = callback(key, this);
+                
+                // Function might return void (i.e. asynchronous calls)
+                if (value !== undefined)
+                {
+                    // Add the key with no expiry date
+                    this.add(key, value, 0);
+                    return this.get(key);
+                }
+            }
 
-            // In any other case, return null
-            return null;
+            // In any other case, return undefined
+            return undefined;
         },
         /**
          * Empties the cache
@@ -122,6 +136,6 @@
         }
     };
     
-    root.Cache = Cache;
+    root.Cache = root.Cache || Cache;
 
 }();

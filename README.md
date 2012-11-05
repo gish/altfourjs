@@ -12,3 +12,19 @@ If supported, it utilizes the local storage API.
     cache.get("two"); // Retrieve object with key "two"
 
     cache.clear(); // Clear the cache
+    
+    // Provide callback to run on cache miss
+    cache.get("name", function(key, cache)
+    {
+        return "John Doe";
+    });
+    
+    // Assume value set asynchronously if no return value
+    cache.get("age", function(key, cache)
+    {
+        cache.set(key, 24);
+    });
+    
+# Changelog
+## 2012-11-05
+Adds support for callback function on cache miss
