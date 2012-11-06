@@ -1,4 +1,4 @@
-;!function()
+(function()
 {
     var root = this;
     
@@ -200,6 +200,5 @@
         }
     };
     
-    root.Cache = root.Cache || Cache;
-
-}();
+    root.Cache = (root.Cache || Cache);
+})();
