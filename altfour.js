@@ -3,9 +3,43 @@
     var root = this;
     
     var namespace = 'altfourjs';
+    
+    var garbageCollectors = {};
+    
+    /**
+     * Runs GC process
+     */
+    var cleanup = function(key)
+    {
+        delete this.storage[key];
+    };
+    
+    /**
+     * Registers key for removal
+     * @var string
+     */
+    var registerGc = function(key, expiry)
+    {
+        var self = this;
+        garbageCollectors[key] = setTimeout(function()
+        {
+            cleanup.apply(self, [key]);
+        }, expiry);
+    };
+    
+    /**
+     * Deregister GC
+     * @var string
+     */
+    var deregisterGc = function(key)
+    {
+        clearTimeout(garbageCollectors[key]);
+        garbageCollectors[key] = null;
+    };
 
     var Cache = function()
     {
+        var self = this;
         // Is local storage supported? Retrieve the object
         this.retrieveFromLocalStorage();
 
@@ -23,9 +57,19 @@
         {
             if (expiry)
             {
-                expiry = new Date().getTime() + (expiry * 1E3);
+                expiry = new Date().getTime() + expiry;
+                
+                // Register key for expiry
+                registerGc.apply(this, [key, expiry]);
             }
-            
+            else
+            {
+                expiry = 0;
+                
+                // Removes potential GC
+                deregisterGc.apply(this, [key]);
+            }
+
             this.storage[key] = {
                 item   : item,
                 expiry : expiry

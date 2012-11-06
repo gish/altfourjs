@@ -26,5 +26,8 @@ If supported, it utilizes the local storage API.
     });
     
 # Changelog
+## 2012-11-06
+Adds garbage collector
+
 ## 2012-11-05
 Adds support for callback function on cache miss

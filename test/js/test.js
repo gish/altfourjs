@@ -116,3 +116,49 @@ asyncTest("Value set asynchronously by callback", 2, function()
         }, 1E1);
     });
 });
+
+// Expired values removed by internal GC
+asyncTest("Value cleaned up by internal GC", 2, function()
+{
+    var key = "name";
+    var value = "John Doe";
+    cache.clear();
+    cache.add(key, value, 1);
+    equal(cache.get(key), value, "Key '" + key + "' has value '" + value + "'");
+    setTimeout(function()
+    {
+        strictEqual(cache.storage[key], undefined, "Key '" + key + "' is removed from cache");
+        start();
+    }, cache.gcTimeout);
+});
+
+
+// Value with no expiry not removed by internal GC
+asyncTest("Value not removed by internal GC", 2, function()
+{
+    var key = "name";
+    var value = "John Doe";
+    cache.clear();
+    cache.add(key, value, 0);
+    equal(cache.get(key), value, "Key '" + key + "' has value '" + value + "'");
+    setTimeout(function()
+    {
+        strictEqual(cache.get(key), value, "Key '" + key + "' is not removed from cache");
+        start();
+    }, cache.gcTimeout);
+});
+
+// Item, with no expiry replaces item with expiry, not removed by GC
+asyncTest("Item, with no expiry replacing item with expiry, not removed by GC", 1, function()
+{
+    var key = "name2";
+    var value = "John Doe";
+    cache.clear();
+    cache.add(key, value, 1E2);
+    cache.add(key, value, 0);
+    setTimeout(function()
+    {
+        equal(cache.get(key), value, "Item not removed");
+        start();
+    }, 1E2);
+});
