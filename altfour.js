@@ -22,6 +22,11 @@
         this.registerGc = function(key, expiry)
         {
             var self = this;
+            
+            // Clear potential old GC timer
+            this.deregisterGc(key);
+            
+            // Create timer for GC
             this.garbageCollectors[key] = setTimeout(function()
             {
                 self.cleanup.apply(self, [key]);
@@ -113,10 +118,10 @@
         {
             if (expiry)
             {
-                expiry = new Date().getTime() + expiry;
-                
                 // Register key for expiry
                 this.registerGc(key, expiry);
+                
+                expiry = new Date().getTime() + expiry;
             }
             else
             {

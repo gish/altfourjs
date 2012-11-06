@@ -147,7 +147,7 @@ asyncTest("Value not removed by internal GC", 2, function()
 // Item, with no expiry replaces item with expiry, not removed by GC
 asyncTest("Item, with no expiry replacing item with expiry, not removed by GC", 1, function()
 {
-    var key = "name2";
+    var key = "name";
     var value = "John Doe";
     cache.clear();
     cache.add(key, value, 1E2);
@@ -158,3 +158,20 @@ asyncTest("Item, with no expiry replacing item with expiry, not removed by GC", 
         start();
     }, 1E2);
 });
+
+// Making sure GC not running if key is updated with future expiry time
+asyncTest("Item update with future expiry date not expiring", 1, function()
+{
+    var key = "name";
+    var value = "John Doe";
+    var newValue = "Jane Doe";
+    cache.clear();
+    cache.add(key, value, 1E1);
+    cache.add(key, newValue, 1E5);
+
+    setTimeout(function()
+    {
+        equal(cache.get(key), newValue, "Item not removed");
+        start();
+    }, 1E1);
+})
