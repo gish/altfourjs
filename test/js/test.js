@@ -66,16 +66,12 @@ test("Has JSON", function()
 
 
 // Local storage
-if (cache.hasLocalStorage())
+test("Cache in local storage", function()
 {
-    test("Cache in local storage", function()
-    {
-        cache.add("foo", "foo", 1);
-        cache.add(1, "bar", 1);
-        cache.saveToLocalStorage();
-        equal(localStorage.getItem('altfourjs'), JSON.stringify(cache.storage), "Cache stored in local storage");
-    });
-}
+    cache.add("foo", "foo", 1);
+    cache.add(1, "bar", 1);
+    equal(localStorage.getItem('altfourjs'), JSON.stringify(cache.storage), "Cache stored in local storage");
+});
 
 // Assigns value from callback if miss
 test("Item stored from callback on miss", function()
