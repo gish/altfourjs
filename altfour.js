@@ -7,9 +7,7 @@
     var Cache = function()
     {
         var self = this;
-
-        this.garbageCollectors = {};
-
+        
         /**
          * Runs GC process
          */
@@ -20,7 +18,6 @@
 
         /**
          * Registers key for removal
-         * @var string
          */
         this.registerGc = function(key, expiry)
         {
@@ -29,16 +26,16 @@
             {
                 self.cleanup.apply(self, [key]);
             }, expiry);
+            return this.garbageCollectors[key];
         };
 
         /**
          * Deregister GC
-         * @var string
          */
         this.deregisterGc = function(key)
         {
             clearTimeout(this.garbageCollectors[key]);
-            this.garbageCollectors[key] = null;
+            delete this.garbageCollectors[key];
         };
 
         /**
@@ -89,6 +86,16 @@
             }
         };
         
+        // Instantiate list with garbage collectors
+        this.garbageCollectors = {};
+        
+        // Create stats object
+        this.stats = {
+            misses : 0,
+            hits   : 0,
+            total  : 0
+        };
+        
         // Is local storage supported? Retrieve the object
         this.retrieveFromLocalStorage();
 
@@ -137,6 +144,7 @@
             var item;
             var now;
             now = new Date().getTime();
+            this.stats.total++;
             // Does the key exist?
             if (this.storage[key])
             {
@@ -144,6 +152,7 @@
                 // Is the item valid?
                 if (!item.expiry || (item.expiry && item.expiry >= now))
                 {
+                    this.stats.hits++;
                     return item.item;
                 }
                 // Remove the item
@@ -166,11 +175,13 @@
                 {
                     // Add the key with no expiry date
                     this.add(key, value, 0);
+                    this.stats.hits++;
                     return this.get(key);
                 }
             }
 
             // In any other case, return undefined
+            this.stats.misses++;
             return undefined;
         },
         /**
