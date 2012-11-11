@@ -3,6 +3,69 @@
     var root = this;
     
     var namespace = 'altfourjs';
+
+
+	/**
+	 * Class for handling local storage
+	 */
+	var LocalStorage = function()
+	{
+		this.supported = null;
+	};
+
+	LocalStorage.prototype = {
+		/**
+		 * Verifies local storage is supported
+		 */
+		isSupported : function()
+		{
+			if (this.hasLocalStorage == null)
+			{
+	            var uid;
+	            var storage;
+	            var result;
+	            uid = new Date();
+	            try
+	            {
+	                (storage = window.localStorage).setItem(uid, uid);
+	                result = storage.getItem(uid) == uid;
+	                storage.removeItem(uid);
+	                this.supported = (result && storage);
+	            }
+	            catch(e)
+	            {
+					this.supported = false;
+	            }
+			}
+
+			return this.supported;
+		},
+		/**
+		 * Store an object in local storage
+		 */
+		add : function(key, value)
+		{
+			if (this.isSupported())
+			{
+				localStorage.setItem(key, JSON.stringify(value));
+			}
+		},
+		/**
+		 * Retrieves an object
+		 */
+		get : function()
+		{
+			// Fetch object if local storage is supported
+			if (this.isSupported())
+            {
+                return JSON.parse(localStorage.getItem(namespace));
+            }
+            else
+            {
+                return null;
+            }
+		}
+	}
     
     var Cache = function()
     {
@@ -14,6 +77,7 @@
         this.cleanup = function(key)
         {
             delete this.storage[key];
+			this.saveToLocalStorage();
         };
 
         /**
@@ -44,36 +108,11 @@
         };
 
         /**
-         * Verifies support for local storage
-         */
-        this.hasLocalStorage = function()
-        {
-            var uid;
-            var storage;
-            var result;
-            uid = new Date();
-            try
-            {
-                (storage = window.localStorage).setItem(uid, uid);
-                result = storage.getItem(uid) == uid;
-                storage.removeItem(uid);
-                return result && storage;
-            }
-            catch(e)
-            {
-                return false;
-            }
-        };
-
-        /**
          * Saves the cache to local storage
          */
         this.saveToLocalStorage = function()
         {
-            if (this.hasLocalStorage())
-            {
-                localStorage.setItem(namespace, JSON.stringify(this.storage));
-            }
+            this.localStorage.add(namespace, this.storage);
         };
 
         /**
@@ -81,15 +120,11 @@
          */
         this.retrieveFromLocalStorage = function()
         {
-            if (this.hasLocalStorage())
-            {
-                this.storage = JSON.parse(localStorage.getItem(namespace));
-            }
-            else
-            {
-                this.storage = null;
-            }
+            return this.localStorage.get(namespace);
         };
+
+		// Local storage handler
+		this.localStorage = new LocalStorage();
         
         // Instantiate list with garbage collectors
         this.garbageCollectors = {};

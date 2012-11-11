@@ -68,6 +68,7 @@ test("Has JSON", function()
 // Local storage
 test("Cache in local storage", function()
 {
+	cache.clear();
     cache.add("foo", "foo", 1);
     cache.add(1, "bar", 1);
     equal(localStorage.getItem('altfourjs'), JSON.stringify(cache.storage), "Cache stored in local storage");
