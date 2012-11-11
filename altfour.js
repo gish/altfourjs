@@ -19,23 +19,23 @@
 		 */
 		isSupported : function()
 		{
-			if (this.hasLocalStorage == null)
+			if (this.hasLocalStorage === null)
 			{
-	            var uid;
-	            var storage;
-	            var result;
-	            uid = new Date();
-	            try
-	            {
-	                (storage = window.localStorage).setItem(uid, uid);
-	                result = storage.getItem(uid) == uid;
-	                storage.removeItem(uid);
-	                this.supported = (result && storage);
-	            }
-	            catch(e)
-	            {
+				var uid;
+				var storage;
+				var result;
+				uid = new Date();
+				try
+				{
+					(storage = window.localStorage).setItem(uid, uid);
+					result = storage.getItem(uid) == uid;
+					storage.removeItem(uid);
+					this.supported = (result && storage);
+				}
+				catch(e)
+				{
 					this.supported = false;
-	            }
+				}
 			}
 
 			return this.supported;
@@ -243,6 +243,7 @@
 					delete this.garbageCollectors[key];
 				}
 			}
+			this.saveToLocalStorage();
 			
 			// Returns this for chaining
 			return this;
