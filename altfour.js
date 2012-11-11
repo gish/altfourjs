@@ -19,7 +19,7 @@
 		 */
 		isSupported : function()
 		{
-			if (this.hasLocalStorage === null)
+			if (this.supported === null)
 			{
 				var uid;
 				var storage;
@@ -70,6 +70,22 @@
     var Cache = function()
     {
         var self = this;
+
+		/**
+		 * Initialize garbage collectors for items loaded from local storage
+		 */
+		this.initGcs = function()
+		{
+			for (var key in this.storage)
+			{
+				var item = this.storage[key];
+				// Only register when there's an expiration defined
+				if (item.expiry)
+				{
+					this.registerGc(key, item.expiry);
+				}
+			}
+		};
         
         /**
          * Runs GC process
@@ -120,7 +136,7 @@
          */
         this.retrieveFromLocalStorage = function()
         {
-            return this.localStorage.get(namespace);
+            this.storage = this.localStorage.get(namespace);
         };
 
 		// Local storage handler
@@ -143,6 +159,10 @@
         {
             this.storage = {};
         }
+		else
+		{
+			this.initGcs();
+		}
     };
 
     Cache.prototype = {

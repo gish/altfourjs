@@ -1,7 +1,7 @@
 var cache = new Cache();
 test("Stored object doesn't expire", function()
 {
-    var object = new Object();
+    var object = {};
     cache.add('foo', object, 1);
     equal(cache.get('foo'), object, "Object didn't expire");
     cache.clear();
@@ -33,7 +33,7 @@ test("Can store array", function()
 
 test("Object expires", function()
 {
-    var object = new Object();
+    var object = {};
     cache.add('object', object, -1);
     strictEqual(cache.get('object'), undefined, "Object has expired");
     cache.clear();
@@ -41,7 +41,7 @@ test("Object expires", function()
 
 test("Object with future date doesn't expire", function()
 {
-    var object = new Object();
+    var object = {};
     cache.add('object', object, new Date().getTime()+3600);
     equal(cache.get('object'), object, "Object is there");
     cache.clear();
@@ -71,6 +71,8 @@ test("Cache in local storage", function()
 	cache.clear();
     cache.add("foo", "foo", 1);
     cache.add(1, "bar", 1);
+	cache = null;
+	cache = new Cache();
     equal(localStorage.getItem('altfourjs'), JSON.stringify(cache.storage), "Cache stored in local storage");
 });
 
@@ -84,7 +86,7 @@ test("Item stored from callback on miss", function()
     equal(cache.get(key, function(key, cache)
     {
         return name;
-    }), name, "Cache contains object with key '" + key + "' after callback")
+    }), name, "Cache contains object with key '" + key + "' after callback");
 });
 
 // No value retrieved if callback doesn't return value
@@ -93,7 +95,7 @@ test("Item not stored when callback function returns void on miss", function()
     var key = "name";
     cache.clear();
     strictEqual(cache.get(key), undefined, "Cache doesn't contain key '" + key + "' when cleared");
-    strictEqual(cache.get(key, function() {}), undefined, "Cache doesn't contain object with key '" + key + "' after callback")
+    strictEqual(cache.get(key, function() {}), undefined, "Cache doesn't contain object with key '" + key + "' after callback");
 });
 
 // Value set asynchronously by callback function
@@ -175,7 +177,21 @@ asyncTest("Item update with future expiry date not expiring", 1, function()
         equal(cache.get(key), newValue, "Item not removed");
         start();
     }, 1E1);
-})
+});
+
+// Garbage collectors initialized for items retrieved from local storage
+test("Garbage collectors initialized for items retrieved from local storage", function()
+{
+	var keys = ["name", "age"];
+	var values = ["John Doe", 26];
+	cache.clear();
+	cache.add(keys[0], values[0], 3600);
+	cache.add(keys[1], values[1], 3600);
+	cache = null;
+	cache = new Cache();
+	ok(cache.garbageCollectors[keys[0]] !== undefined, "Garbage collector initialized for '" + keys[0] + "'");
+	ok(cache.garbageCollectors[keys[1]] !== undefined, "Garbage collector initialized for '" + keys[1] + "'");
+});
 
 // Removes an item
 test("Item removed", function()
