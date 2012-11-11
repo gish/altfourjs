@@ -176,3 +176,15 @@ asyncTest("Item update with future expiry date not expiring", 1, function()
         start();
     }, 1E1);
 })
+
+// Removes an item
+test("Item removed", function()
+{
+	var key = "name";
+	var value = "John Doe";
+	cache.clear();
+	cache.add(key, value, 3600);
+	cache.remove(key);
+	strictEqual(cache.get(key), undefined, "Key " + key + " removed");
+	strictEqual(cache.garbageCollectors[key], undefined, "GC for " + key + " removed");
+});

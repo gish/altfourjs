@@ -25,7 +25,13 @@ If supported, it utilizes the local storage API.
         cache.set(key, 24);
     });
     
+    // Remove an item
+    cache.remove("age");
+    
 # Changelog
+## 2012-11-11
+Adds function to remove an item
+
 ## 2012-11-06
 Adds garbage collector
 

@@ -65,7 +65,7 @@
                 return null;
             }
 		}
-	}
+	};
     
     var Cache = function()
     {
@@ -174,6 +174,7 @@
             // Save to local storage
             this.saveToLocalStorage();
             
+			// Returns self for chaining
             return this;
         },
         /**
@@ -224,6 +225,28 @@
             this.stats.misses++;
             return undefined;
         },
+		/**
+		 * Removes a key
+		 */
+		remove : function(key)
+		{
+			// Check if key exists
+			if (this.storage[key] !== undefined)
+			{
+				// Remove the key
+				delete this.storage[key];
+				
+				// Remove garbage collector
+				if (this.garbageCollectors[key] !== undefined)
+				{
+					clearTimeout(this.garbageCollectors[key]);
+					delete this.garbageCollectors[key];
+				}
+			}
+			
+			// Returns this for chaining
+			return this;
+		},
         /**
          * Empties the cache
          */
