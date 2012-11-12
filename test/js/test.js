@@ -68,9 +68,9 @@ test("Has JSON", function()
 // Local storage
 test("Cache in local storage", function()
 {
-	cache.clear();
-    cache.add("foo", "foo", 1);
-    cache.add(1, "bar", 1);
+    var cache = new Cache();
+    cache.add("foo", "foo", 1E3);
+    cache.add(1, "bar", 1E3);
 	cache = null;
 	cache = new Cache();
     equal(localStorage.getItem('altfourjs'), JSON.stringify(cache.storage), "Cache stored in local storage");
@@ -213,4 +213,23 @@ test("Item removed", function()
 	cache.remove(key);
 	strictEqual(cache.get(key), undefined, "Key " + key + " removed");
 	strictEqual(cache.garbageCollector.collectors[key], undefined, "GC for " + key + " removed");
+});
+
+/** Namespacing **/
+test("Two cache objects don't share values in local storage for key with joint name", function()
+{
+    var one = new Cache('one');
+    var two = new Cache('two');
+    var key = "name";
+    var male = "John Doe";
+    var female = "Jane Doe";
+    
+    one.add(key, male, 0);
+    two.add(key, female, 0);
+    one = null;
+    two = null;
+    one = new Cache('one');
+    two = new Cache('two');
+    equal(one.get(key), male, "First cache correct value");
+    equal(two.get(key), female, "Second cache correct value");
 });

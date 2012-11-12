@@ -28,7 +28,13 @@ If supported, it utilizes the local storage API.
     // Remove an item
     cache.remove("age");
     
+    // Create a separate cache
+    var cacheNew = new Cache('second');
+    
 # Changelog
+## 2012-11-12
+Adds functionality to use multiple caches
+
 ## 2012-11-11
 Adds function to remove an item
 
