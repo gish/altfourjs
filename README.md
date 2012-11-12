@@ -1,7 +1,7 @@
-# altfourjs
-A simple caching library for objects.
+# altfourjs 
+_– because cache is king_
 
-If supported, it utilizes the local storage API.
+A simple caching library for objects. If supported, it utilizes the local storage API.
 
 # Usage
 
