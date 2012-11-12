@@ -4,32 +4,50 @@ A simple caching library for objects.
 If supported, it utilizes the local storage API.
 
 # Usage
+
+## Add and retrieve value
     var cache = new Cache();
+    cache.add("name", "John Doe", 0);
+    var name = cache.get("name");
 
-    cache.add(1, "one", 0); // Add object that doesn't expires
-    cache.add(2, "two", 1); // Add object that expires in one second
-
-    cache.get("two"); // Retrieve object with key "two"
-
-    cache.clear(); // Clear the cache
+## Remove a value
+    var cache = new Cache();
+    cache.add("name", "John Doe", 0);
+    cache.remove("name");
     
-    // Provide callback to run on cache miss
-    cache.get("name", function(key, cache)
+
+## Add value that expires in a minute
+    var cache = new Cache();
+    cache.add("name", "John Doe", 60);
+
+## Clear the cache
+    var cache = new Cache();
+    cache.clear();
+    
+## Provide callback to run on cache miss
+    var cache = new Cache();
+    var name = cache.get("name", function(key, cache)
     {
         return "John Doe";
     });
     
-    // Assume value set asynchronously if no return value
-    cache.get("age", function(key, cache)
+## Set value from asynchronous callback on cache miss
+    var cache = new Cache();
+    var name = cache.get("name", function(key, cache)
     {
-        cache.set(key, 24);
+        cache.set(key, "John Doe", 0);
     });
     
-    // Remove an item
-    cache.remove("age");
+## Create two separate caches
+    var one = new Cache('one');
+    var two = new Cache('two');
     
-    // Create a separate cache
-    var cacheNew = new Cache('second');
+# Chaining
+The basic functions can be chained like this:
+
+    var cache = new Cache();
+    cache.add("name", "John Doe").add("age", 26).remove("name");
+    cache.get("name") == undefined;
     
 # Changelog
 ## 2012-11-12

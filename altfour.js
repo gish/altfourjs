@@ -117,20 +117,19 @@
             expire : function(key)
             {
                 this.removeCallback(key);
+            },
+            /**
+             * Removes all timers
+             */
+            clear : function()
+            {
+                for (var key in this.collectors)
+                {
+                    this.remove(key);
+                }
             }
         };
-
-        var CacheError = function(message)
-        {
-            this.message = message;
-        };
-        CacheError.prototype = new Error();
-        CacheError.prototype.name = "Cache Exception";
-        CacheError.prototype.toString = function()
-        {
-            return this.name + ": " + this.message;
-        };
-
+        
         var Cache = function(name)
         {
             var self = this;
@@ -179,7 +178,7 @@
             /**
             * Adds item with key and expiry time
             */
-            add : function(key, item, expiry)
+            add: function(key, item, expiry)
             {
                 if (expiry)
                 {
@@ -280,6 +279,7 @@
             {
                 this.storage = {};
                 this.saveToLocalStorage();
+                this.garbageCollector.clear();
                 return this;
             },
             /**
