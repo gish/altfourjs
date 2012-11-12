@@ -66,84 +66,72 @@
             }
 		}
 	};
+	
+	var GarbageCollector = function(callback)
+	{
+		// List of timers
+		this.collectors = [];
+		// Callback function to invoke on expiration
+		this.removeCallback = callback;
+	};
+	
+	GarbageCollector.prototype = {
+		/**
+		 * Adds key for expiration
+		 */
+		add : function(key, expiry)
+		{
+			var self = this;
+			expiry = (expiry - new Date().getTime());
+
+            // Clear potentially old timer
+            this.remove(key);
+            
+			// In case already expired, remove immediately
+			if (expiry <= 0)
+			{
+				this.expire(key);
+			}
+			// Otherwise, start timer
+			else
+			{
+			// Create timer
+			this.collectors[key] = setTimeout(function()
+			{
+				self.expire.apply(self, [key]);
+			}, expiry);
+			}
+		},
+		/**
+		 * Removes key
+		 */
+		remove : function(key)
+		{
+            clearTimeout(this.collectors[key]);
+            delete this.collectors[key];
+		},
+		/**
+		 * Expire method invoke on expiration
+		 */
+		expire : function(key)
+		{
+			this.removeCallback(key);
+		}
+	};
     
     var Cache = function()
     {
         var self = this;
 
-		/**
-		 * Initialize garbage collectors for items loaded from local storage
-		 */
-		this.initGcs = function()
-		{
-			for (var key in this.storage)
-			{
-				var item = this.storage[key];
-				// Only register when there's an expiration defined
-				if (item.expiry)
-				{
-					this.registerGc(key, item.expiry);
-				}
-			}
-		};
-        
-        /**
-         * Runs GC process
-         */
-        this.cleanup = function(key)
-        {
-            delete this.storage[key];
-			this.saveToLocalStorage();
-        };
-
-        /**
-         * Registers key for removal
-         */
-        this.registerGc = function(key, expiry)
-        {
-            var self = this;
-            
-            // Clear potential old GC timer
-            this.deregisterGc(key);
-            
-            // Create timer for GC
-            this.garbageCollectors[key] = setTimeout(function()
-            {
-                self.cleanup.apply(self, [key]);
-            }, expiry);
-            return this.garbageCollectors[key];
-        };
-
-        /**
-         * Deregister GC
-         */
-        this.deregisterGc = function(key)
-        {
-            clearTimeout(this.garbageCollectors[key]);
-            delete this.garbageCollectors[key];
-        };
-
-        /**
-         * Saves the cache to local storage
-         */
-        this.saveToLocalStorage = function()
-        {
-            this.localStorage.add(namespace, this.storage);
-        };
-
-        /**
-         * Retrieves the cache from local storage
-         */
-        this.retrieveFromLocalStorage = function()
-        {
-            this.storage = this.localStorage.get(namespace);
-        };
-
 		// Local storage handler
 		this.localStorage = new LocalStorage();
         
-        // Instantiate list with garbage collectors
-        this.garbageCollectors = {};
+        // Instantiate garbage collector
+        this.garbageCollector = new GarbageCollector(function(key)
+		{
+			delete self.storage[key];
+			self.saveToLocalStorage();
+		});
         
         // Create stats object
         this.stats = {
@@ -173,17 +161,16 @@
         {
             if (expiry)
             {
+                expiry = (new Date().getTime() + expiry);
                 // Register key for expiry
-                this.registerGc(key, expiry);
-                
-                expiry = new Date().getTime() + expiry;
+                this.garbageCollector.add(key, expiry);
             }
             else
             {
                 expiry = 0;
                 
                 // Removes potential GC
-                this.deregisterGc(key);
+                this.garbageCollector.remove(key);
             }
 
             this.storage[key] = {
@@ -257,11 +244,7 @@
 				delete this.storage[key];
 				
 				// Remove garbage collector
-				if (this.garbageCollectors[key] !== undefined)
-				{
-					clearTimeout(this.garbageCollectors[key]);
-					delete this.garbageCollectors[key];
-				}
+				this.garbageCollector.remove(key);
 			}
 			this.saveToLocalStorage();
 			
@@ -276,7 +259,36 @@
             this.storage = {};
             this.saveToLocalStorage();
             return this;
-        }
+        },
+        /**
+         * Saves the cache to local storage
+         */
+        saveToLocalStorage : function()
+        {
+            this.localStorage.add(namespace, this.storage);
+        },
+        /**
+         * Retrieves the cache from local storage
+         */
+        retrieveFromLocalStorage : function()
+        {
+            this.storage = this.localStorage.get(namespace);
+        },
+		/**
+		 * Initialize garbage collectors for items loaded from local storage
+		 */
+		initGcs : function()
+		{
+			for (var key in this.storage)
+			{
+				var item = this.storage[key];
+				// Only register when there's an expiration defined
+				if (item.expiry)
+				{
+					this.garbageCollector.add(key, item.expiry);
+				}
+			}
+		}
     };
     
     root.Cache = (root.Cache || Cache);

@@ -2,7 +2,7 @@ var cache = new Cache();
 test("Stored object doesn't expire", function()
 {
     var object = {};
-    cache.add('foo', object, 1);
+    cache.add('foo', object, 0);
     equal(cache.get('foo'), object, "Object didn't expire");
     cache.clear();
 });
@@ -128,7 +128,7 @@ asyncTest("Value cleaned up by internal GC", 2, function()
     {
         strictEqual(cache.storage[key], undefined, "Key '" + key + "' is removed from cache");
         start();
-    }, cache.gcTimeout);
+    }, 2);
 });
 
 
@@ -189,8 +189,18 @@ test("Garbage collectors initialized for items retrieved from local storage", fu
 	cache.add(keys[1], values[1], 3600);
 	cache = null;
 	cache = new Cache();
-	ok(cache.garbageCollectors[keys[0]] !== undefined, "Garbage collector initialized for '" + keys[0] + "'");
-	ok(cache.garbageCollectors[keys[1]] !== undefined, "Garbage collector initialized for '" + keys[1] + "'");
+	ok(cache.garbageCollector.collectors[keys[0]] !== undefined, "Garbage collector initialized for '" + keys[0] + "'");
+	ok(cache.garbageCollector.collectors[keys[1]] !== undefined, "Garbage collector initialized for '" + keys[1] + "'");
+});
+
+// Item removed immediately on expiration way back in time
+test("Item immediately on expiration way back in time", function()
+{
+	var key = "name";
+	var value = "John Doe";
+	cache.clear();
+	cache.add(key, value, (-1) * 1E2);
+	strictEqual(cache.get(name), undefined, "Item expired");
 });
 
 // Removes an item
@@ -202,5 +212,5 @@ test("Item removed", function()
 	cache.add(key, value, 3600);
 	cache.remove(key);
 	strictEqual(cache.get(key), undefined, "Key " + key + " removed");
-	strictEqual(cache.garbageCollectors[key], undefined, "GC for " + key + " removed");
+	strictEqual(cache.garbageCollector.collectors[key], undefined, "GC for " + key + " removed");
 });
