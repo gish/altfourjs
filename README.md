@@ -7,18 +7,18 @@ A simple caching library for objects. If supported, it utilizes the local storag
 
 ## Add and retrieve value
     var cache = new Cache();
-    cache.add("name", "John Doe", 0);
+    cache.set("name", "John Doe", 0);
     var name = cache.get("name");
 
 ## Remove a value
     var cache = new Cache();
-    cache.add("name", "John Doe", 0);
+    cache.set("name", "John Doe", 0);
     cache.remove("name");
     
 
 ## Add value that expires in a minute
     var cache = new Cache();
-    cache.add("name", "John Doe", 60);
+    cache.set("name", "John Doe", 60);
 
 ## Clear the cache
     var cache = new Cache();
@@ -46,10 +46,13 @@ A simple caching library for objects. If supported, it utilizes the local storag
 The basic functions can be chained like this:
 
     var cache = new Cache();
-    cache.add("name", "John Doe").add("age", 26).remove("name");
+    cache.set("name", "John Doe").set("age", 26).remove("name");
     cache.get("name") == undefined;
     
 # Changelog
+## 2012-11-20
+Renames Cache.add() to Cache.set()
+
 ## 2012-11-12
 Adds functionality to use multiple caches
 
